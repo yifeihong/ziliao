@@ -288,6 +288,256 @@ virtual 函数类型 函数名(形参表)  {
     3）私有继承(private)     class A : private B
        父类(B)中的公共权限和保护权限的内容继承到子类(A)中后，无论这些内容在父类中是公共还是保护权限，到子类中全部变为私有权限。父类中的私有权限内容，子类虽然继承了，但是无访问权限
 
+26.（1）fwrite
+ size_t   fwrite(const void* buffer,  size_t size,  size_t count,  FILE* stream);
+将缓冲区buffer的内容写入stream指向的文件，共写count组数据,每组数据有size个字节
+注意：这个函数以二进制形式对文件进行操作，不局限于文本文件
+返回值：返回实际写入的数据块数目
+1）buffer：是一个指针，对fwrite来说，是要输出数据的地址；
+2）size：要写入内容的单字节数；
+3）count:要进行写入size字节的数据项的个数；
+4）stream:目标文件指针；
+5）返回实际写入的数据项个数count。
+说明：
+写入到文件的哪里？ 这个与文件的打开模式有关，如果是w+，则是从file pointer指向的地址开始写，替换掉之后的内容，文件的长度可以不变，stream的位置移动count个数；如果是a+，则从文件的末尾开始添加，文件长度加大。
+fseek对此函数有作用，但是fwrite[1]函数写到用户空间缓冲区，并未同步到文件中，所以修改后要将内存与文件同步可以用fflush（FILE *fp）函数同步。
+（2）fopen
+FILE * fopen(const char * path,const char * mode);
+参数path字符串包含欲打开的文件路径及文件名，参数mode字符串则代表着流形态。
+文件顺利打开后，指向该流的文件指针就会被返回。如果文件打开失败则返回NULL，并把错误代码存在errno 中
+
+27.初始化：
+int  a = 0;
+int  a = {0};
+int  a{0};	
+int  a(0);       （都可以把int型变量a初始化为0；）
+  C++提供了不同的初始化方式，大多数情况下这些初始化方式可以相互等价地使用，例外情况有：
+  （1）使用拷贝初始化（即使用=）时，只能提供一个初始值
+  （2）如果提供的时一个类内初始值（创建对象时，类内初始值将用于初始化数据成员），则只能使用拷贝初始化或使用花括号的形式初始化
+  （3）如果提供的是初始元素值的列表，则只能把初始值都放在花括号里进行列表初始化，而不能放在圆括号里
+
+28.vector:
+必须包含适当的头文件：
+#include<vector>
+using std::vector;           //没有这个会报错
+
+ （1） 表示对象的集合，因为“容纳着”其他对象，所以也常被称作容器
+  vector<int>  ivec;       //ivec保存int类型的对象，初始状态为空
+  vector<vector<string>>  file;      //元素是vector对象
+  vector<string>  v1{“a”,”an”};     //初始值要放花括号里，不能用圆括号
+  vector<int>  v1(10);     //v1有10个元素，每个值都是0
+  vector<int>  v2{10};     //v2有一个值为10的元素
+  vector<int>  v3(10，1);     //v3有10个元素，每个值都是1
+  vector<int>  v4{10，1};     //v4有10，1两个元素
+  v1.push_back(i);       //把i值放到v1尾端
+//v1.emplace_back(i)  替换push_back()更好，很多时候少一次拷贝
+  v.empty();             //如果v中不含有任何元素，返回真，否则返回假
+  v.size();              //返回v中元素的个数
+  v[n]                   //返回v中第n个位置上元素的引用
+v1.assign(set.begin() , set.end())        //把set全部赋值给v1
+  v1.assign(ls.begin() , ls.begin()+9)       //把ls的前九个赋值给v1
+  v1.assign(10 , 7)                     //把10个7赋值给v1
+ vector对象的下标从0开始计算，但是不能用下标添加元素
+
+（2）for语句处理vector对象中的所有元素
+  vector<int>  v{1,2,3,4,5};
+  for  (auto  &i : v)         //遍历v中的每个元素，注意i是一个引用
+  		i *= i;               //求元素值的平方
+  for  (auto i : v)           //遍历v中的每个元素
+        cout<<i<<” “;       //输出该元素
+  第一个循环把控制变量i定义成引用类型，这样就能通过i给v的元素赋值，i的类型由auto关键字指定
+
+（3）计算vector内对象的索引
+   //以10分为一个分数段统计成绩的数量
+vctor<unsigned>  scores(11,0);   //11个分数段，全部初始化为0
+unsigned  grade;
+while  (cin >> grade) {
+if (grade <= 100)
+     ++scores[grade/10];    //将对应分数段的计数值加1
+}
+注意：
+   ++scores[grade/10];       //将对应分数段的计数值加1
+   等价于：
+   auto ind = grade/10;        //计算索引
+   scores[ind] = scores[ind] + 1;    //索引到的值加1
+（4）不能用下标形式添加元素
+vector<int>  ivec;
+for (decltype(ivec.size()) ix=0; ix!=10; ++ix)
+    ivec[ix] = ix;       //错误，ivec不包含任何元素
+
+for (decltype(ivec.size()) ix=0; ix!=10; ++ix)
+        ivec.push_back(ix);      //正确，添加一个新元素。该元素的值是ix
+注意：
+vector对象（以及string对象）的下标运算符可用于访问已存在的元素，而不能用于添加元素
+（5）decltype 类型指示符  ： 选择并返回操作数的数据类型
+1）decltype(f())  sum = x;     //sum的类型就是函数f的返回类型
+2）const  int  ci = 0 , &cj = ci ;
+decltype(ci)  x = 0;            //x的类型是const  int
+decitype(cj)  y = x;            //y的类型是const  int&, y绑定到变量x
+decltype(cj)  x;               //错误：z是一个引用，必须初始化
+3）int  i = 42, *p = &i, &r = i;
+  decltype (r+0)  b;            //正确，结果是int,因此b是int型
+decltype(*p)  c;             //错误，c是int&,必须初始化
+4）decltype((i))  d;            //错误，d是int&,必须初始化
+   decltype(i)  e;             //正确，e是一个未初始化的int
+注意：
+decltype((variable)) （注意是双层括号）的结果永远是引用，而decltype(variable)结果只有当variable本身就是一个引用时才是引用。
+
+（6）vector 查找：
+vector<int>::iterator result = find( L.begin( ), L.end( ), 3 ); //查找3
+    if ( result == L.end( ) ) //没找到
+        cout << "No" << endl;
+    else //找到
+        cout << "Yes" << endl;
+
+（7）vector 排序
+1）普通类型：int    string  等
+   sort(v.begin() , v.end());
+2) 自定义类型，按其中一个项排序
+  sort(v.begin() , v.end() , comp)    //como是自己写的比较函数
+例如： 
+bool  comp(const  student &a, const  student &b){
+	return  a.score < b.score;
+
+29.new
+（1）C++中利用new操作符在堆区开辟数据 
+堆区开辟的数据，由程序员手动开辟，手动释放，释放利用操作符 delete
+语法： new 数据类型 
+利用new创建的数据，会返回该数据对应的类型的指针
+（2）int  *a = new  int(10);       delete  a;        
+创建、删除整型数据，整型数据是10，用的是（）
+（3）int  *arr = new  int[10];      delete[]  arr;     
+创建、删除整型数组，包含10个元素，用的是[],删除时delete后面也要加上[]
+（4）int  *a = new  int[2]();
+     创建一个包含两个整型元素的数组，且初始化为0
+（5）int  *a = new  int[3]{10,2,}
+     创建一个包含三个整型元素的数组，前两个初始化为10和2，即（10，2，0）
+
+30.继承
+（1）继承的好处：可以减少重复的代码
+语法： class A : public B; 
+A 类称为子类 或 派生类 
+B 类称为父类 或 基类 
+派生类中的成员，包含两大部分： 
+一类是从基类继承过来的，一类是自己增加的成员。 
+从基类继承过过来的表现其共性，而新增的成员体现了其个性。
+（2）继承方式一共有三种： 公共继承 保护继承 私有继承
+ 
+（保护等级取高的）
+（3）继承中 先调用父类构造函数，再调用子类构造函数，析构顺序与构造相反
+（4）当子类与父类出现同名的成员时：
+1）子类对象可以直接访问到子类中同名成员 
+2）子类对象加作用域可以访问到父类同名成员 
+3）当子类与父类拥有同名的成员函数，子类会隐藏父类中同名成员函数，加作用域可以访问到父类中 同名函数
+
+31.shared_ptr 类
+make_shared 函数：在动态内存中分配一个对象并初始化它，返回指向此对象的shared_ptr
+（1）shared_ptr<T>  sp       //sp空智能指针，可以指向类型为T的对象
+
+（2）shared_ptr<int>  p3 = make_shared<int>(42);  
+//p3指向一个值为42的int的shared_ptr
+
+（3）shared_ptr<string>  p4 = make_shared<string>(10,’9’);  
+//p4指向一个值为“9999999999”的string
+
+（4）shared_ptr<int>  p5 = make_shared<int>();
+//p5指向一个值初始化的int，即值为0
+
+（5）auto  p6 = make_shared<vector<string>>();
+//p6指向一个动态分配的空vector<string>
+
+（6）拷贝一个shared_ptr,计数器会递增
+shared_ptr<T>p(q)
+   //p是shared_ptr  q的拷贝，此操作会递增q中的计数器，p和q指向相同的对象
+
+（7）shared_ptr赋予一个新值或是被销毁时，计数器会递减，一旦计数器变为0，就会自动释放自己所管理的对象
+    auto  r = make_shared<int>(42);    //r指向的int只有一个引用者
+r = q ;        //给r赋值，令他指向另一个地址，
+            // 递增q指向的对象的引用计数，递减r原来指向的对象的引用计数
+            //若r原来指向的对象已没有引用者，会自动释放
+
+（8）shared_ptr的析构函数会递减它所指向的对象的引用计数，如果引用计数变为0，shared_ptr的析构函数就会销毁对象，并释放它占用的内存
+
+32.SPtr<InsnFatRecord>  getInst()  const  { return inst; }    
+（SPtr 是 shared_ptr的别名）
+
+//返回InsnFatRecord类型的智能指针
+//把整个函数修饰为const，意思是“函数体内不能对成员数据做任何改动”
+ 
+（1）如果你声明这个类的一个const实例，那么它就只能调用有const修饰的函数， const对象只能调用const成员函数
+（2）const对象的值不能被修改，在const成员函数中修改const对象数据成员的值是语法错误，在const函数中调用非const成员函数是语法错误
+（3）关于Const函数的几点规则：
+a.在类中被const声明的成员函数只能访问const成员函数,而非const函数可以访问任意的成员函数,包括const成员函数..
+b.在类中被const声明的成员函数不可以修改对象的数据,不管对象是否具有const性质.它在编译时,以是否修改成员数据为依据,进行检查.
+c.加上mutable修饰符的数据成员,对于任何情况下通过任何手段都可修改,自然此时的const成员函数是可以修改它的
+
+33.成员函数的声明、定义
+成员函数的声明必须在类的内部，它的定义既可以在类的内部也可以在类的外部
+
+34.（1） Friend Classes（友元类）：
+在一个类中指明其他的类（或者）函数能够直接访问该类中的private和protected成员。
+你可以这样来指明：
+friend  class  aClass;   
+//（aClass类可以访问声明类中的private和protected成员）
+注意：
+friend在类中的声明可以在public、protected和private的任何一个控制域中，而不影响其效果。例如，如果你在protected域中有这样的声明，那么aClass类同样可以访问该类的private成员。
+
+（2）Friend Functions（友元函数）
+友元函数和友元类的作用是一样的，它允许一个函数不需要通过其public接口就能够访问到类中的private和protected成员变量。
+你可以这样去声明：
+friend  return_type  class_name::function(args);   
+//（function(args)函数可以访问声明类中的private和protected成员）
+（3）注意：
+1）友元不具有相互性，只具有单项性，若类B是类A的友元，类A不一定是类B的友元，要看在类中是否有相应的声明
+    2）友元不能被继承，B是A的友元类，C是B的子类，推不出C是A的友元
+    3）友元不具有传递性，B是A的友元，C是B的友元，推不出C是A的友元
+
+35.构造函数
+（1）作用：定义了对象被初始化的方式，初始化类对象的数据成员，只要类的对象被创建，就会执行构造函数。
+（2）构造函数的名字和类名相同，没有返回值，类可以包含多个构造函数，不同的构造函数之间必须在参数数量或参数类型上有所区别。
+（3）构造函数不能被声明成const，构造函数完成初始化，const对象才取得“常量”属性，因此，构造函数在const对象的构造过程中可以向其写值。
+（4）没写构造函数时，编译器会创建默认构造函数
+     如果存在类内初始值，用它来初始化成员
+     否则，默认初始化该成员。
+（5）不能依赖默认构造函数的情况：
+    1）我们定义了构造函数，除非再定义一个默认的构造函数，否则类将没有默认构造函数
+2）默认构造函数可能执行错误操作，定义在块中的内置类型或复合类型（例如数组、指针）的对象被默认初始化，他们的值是未定义的
+3）有时候编译器不能为某些类合成默认的构造函数（例如：类中包含一个其他类类型的成员，且这个成员的类型没有默认构造函数）
+（6）struct PageRecord {	
+    enum Type { Invalid, InstPage, PageTable, DataPage };
+    Type type;
+    uint32_t size;
+    uint64_t pa, va;
+uint8_t  *data;     // allocated with new operator  
+PageRecord() : type(Invalid), data(nullptr) { }         //构造函数赋初值
+    ~PageRecord() { if (data) delete data; }               //析构函数
+};
+注意：
+PageRecord() : type(Invalid), data(nullptr) { }        
+//构造函数 ：和{}之间的代码称为构造函数初始值列表，负责为新创建的对象的数据成员赋初值，每个名字后面紧跟括号括起来的（或者在花括号内的）成员初始值，不同成员的初始化通过逗号分隔开来。
+（7）外部构造函数
+class::class()   
+    含义是定义class类的成员，它的名字是class，成员名和类名相同，所以它是一个构造函数
+（8）有参构造函数创建对象：
+     A  a(1);      //栈中分配
+     A  b = A(1);      //栈中分配
+     A*  C = new  A(1);     //堆中分配
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
