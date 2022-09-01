@@ -33,6 +33,55 @@ git pull 远程库别名 远程分支名      拉取远程库内容（例：git 
 git commit --amend       可以查看修改提交描述信息
 
 
+问题：
+1.git  pull时出现错误
+error: Your local changes to the following files would be overwritten by merge
+（1）想保留刚才本地修改的代码，并把git服务器上的代码pull到本地（本地刚才修改的代码将会被暂时封存起来）
+1.	git stash  
+2.	git pull origin master  
+3.	git stash pop  
+（2）完全地覆盖本地的代码，只保留服务器端代码，则直接回退到上一个版本，再进行pull
+1.	git reset --hard  
+2.	git pull origin master
+git stash：备份当前工作区内容，从最近的一次提交中读取相关内容，让工作区保证和上次提交的内容一致。同时，将当前工作区内容保存到Git栈中
+git pull：拉取服务器上当前分支代码
+git stash pop：从Git栈中读取最近一次保存的内容，恢复工作区相关内容。同时，用户可能进行多次stash操作，需要保证后stash的最先被取到，所以用栈（先进后出）来管理；pop取栈顶的内容并恢复
+git stash list：显示Git栈内的所有备份，可以利用这个列表来决定从那个地方恢复。
+git stash clear：清空Git栈
+
+2. git  pull出现错误
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+错误：无法提取，因为您有未合并的文件。
+提示：在工作树中修复它们，然后使用 'git add/rm <file>'
+提示：酌情标记解决方案并进行提交。
+致命的：由于未解决的冲突而退出。
+解决：（1）git  add  .
+     （2）git  commit  -m  “ “
+     （3）git  pull
+
+3.git  pull  时无法更新最新代码（缺少文件）
+可能原因：本地把文件删除了，操作还没有提交
+解决： git  status   查看文件状态，看是否有删除文件
+       将其恢复即可
+
+4.合并分支发生合并冲突：（git  merge  hot-fix）
+（1）git  status  查看哪些文件存在冲突
+（2）手动打开文件  vim  filename
+特殊符号：<<<<<<< HEAD 
+当前分支的代码 
+======= 
+合并过来的代码 
+>>>>>>> hot-fix
+（修改成自己想要的样子）
+（3）添加到暂存区：  git  add  filename
+（4）执行提交： git  commit  -m  “  “
+   (此时使用 git commit 命令时不能带文件名）
+发现后面 MERGING 消失，变为正常
+
+
 
 1.安装：sudo apt install git-all  （ubuntu）
 sudo dnf install git-all  （centos）
