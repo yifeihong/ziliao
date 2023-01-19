@@ -1,0 +1,29 @@
+1.shell获取当前脚本的绝对路径
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+2.用python执行shell
+(1)执行shell命令
+import os
+os.system(‘ls’)   // 执行 ls 命令
+// 其中最后一个0是这个命令的返回值，为0表示命令执行成功。使用system无法将执行的结果保存起来
+
+（2）执行shell脚本
+import os
+os.system(‘./hello.sh’)  // 执行hello.sh脚本
+
+（3）当shell需要传入参数时
+import os
+import sys
+argo = sys.argv[1]
+arg1 = sys.argv[2]
+os.system(‘./hello.sh ’+arg0+' '+arg1)  //在python脚本中调用shell脚本，并传入参数，注意参数前后要有空格
+
+3.shell传参
+我们可以在执行 Shell 脚本时，向脚本传递参数，脚本内获取参数的格式为：$n。n 代表一个数字，1 为执行脚本的第一个参数，2 为执行脚本的第二个参数，以此类推……
+#!/bin/bash
+
+echo "Shell 传递参数实例！";
+echo "执行的文件名：$0";
+echo "第一个参数为：$1";
+echo "第二个参数为：$2";
+echo "第三个参数为：$3";
