@@ -194,5 +194,45 @@ netstat  -antp | grep  9191
 在A.h中声明extern type C，然后在B.cpp中#include "A.h"，这样就可以在B中使用变量C了。
 
 
+13.<sstream>
+<sstream> 定义了三个类：
+istringstream: 流的输入
+ostringstream : 流的输出
+stringstream : 流的输入输出操作。
 
+<sstream> 主要用来进行数据类型转换，由于 <sstream> 使用 string 对象来代替字符数组（snprintf 方式），避免了缓冲区溢出的危险；而且，因为传入参数和目标对象的类型会被自动推导出来，所以不存在错误的格式化符号的问题。简单说，相比 C 编程语言库的数据类型转换，<sstream> 更加安全、自动和直接。
+
+（1）数据类型转换：（int  ->  string）
+     stringstream  sstream;
+     string  str;
+     int  n = 1000;
+     sstream << n;      //int 放入输入流
+     sstream >> str;     //从sstream中抽取前面插入的int类型的数据，赋给string类型
+注意：
+    如果想清空 stringstream，使用 sstream.str(""); 方式；clear() 方法适用于进行多次数据类型转换的场景。
+若要多次转换，不同转换之间要sstream.clear(); 进行清空
+例如： （int  –>  str）  
+sstream.clear()   
+    （bool  ->  int）
+// 若不加sstream.clear()，第二次转换可能出错
+
+（2）按空格分隔字符串
+istringstream str("this is a text");
+string out;
+while (str >> out) {
+	cout << out << endl;
+}
+// istringstream 换为 stringstream 也可以
+
+14. struct中的位域：struct {int i：4}
+为了节省空间，可以把几个数据压缩到少数的几个类型空间上，比如需要表示二个3位二进制的数，一个2位二进制的数，则可以用一个8位的 字符表示之。
+struct
+{char a : 3;
+char b : 3;
+char c : 2;} ;
+这个结构体所占空间为一个字节，8位。节省了空间
+
+15.std::this_thread::yield：和 std::this_thread::sleep_for：
+（1）std::this_thread::yield：　当前线程放弃执行，操作系统调度另一线程继续执行。即当前线程将未使用完的“CPU时间片”让给其他线程使用，等其他线程使用完后再与其他线程一起竞争"CPU"。
+（2）std::this_thread::sleep_for：　表示当前线程休眠一段时间，休眠期间不与其他线程竞争CPU，根据线程需求，等待若干时间。
 
