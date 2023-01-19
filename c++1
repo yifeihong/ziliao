@@ -122,11 +122,76 @@ dec是十进制 如	cout<<dec<<b 	就会把b转换成10进制再输出
 hex是16进制 如	cout<<hex<<b 	就会把b转换成16进制再输出
 oct是8进制 如	cout<<oct<<b 	就会把b转换成8进制再输出
 
+10.类型转换：
+（1）char转整型
+	char c = ‘5’;
+	int  I = c – ‘0’ ;     // 不能用stoi(c);
+(2) char转字符串
+  char c = ‘5’;
+	strintg  str;       // 注：不存在 string s = c; 这样的写法，因为没有这样的构造函数
+	str = c;
+（3）int 转string
+	int a = 3;
+	string s = to_string(a);
+（4）int转char:（0-9）
+	int a = 3;
+	char c = a + 48;
+（5）C的字符串和C++的字符串类型是不一样的，要转换
+       C转C++:
+                char  c1[] = “hello”;
+                string  s = c1;
+       C++转C:
+                string  s = “hello”;
+                const  char  *c1 = s.c_str();
+注意：C++转C ,  c_str()返回的是const  char*类型，所以前面要加const，注意类型的匹配。
 
+11.查找进程：
 
+1）依据输入的命令查找：
+ps  -ef | grep  xmlserver
+// 可以查找输入命令有 xmlserver 的进程
 
+-e : 显示所有进程 
+-f : 全格式 
+-h : 不显示标题 
+-l : 长格式 
+-w : 宽输出 
+a ：显示终端上的所有进程，包括其他用户的进程。 
+r ：只显示正在运行的进程。 
+u ：以用户为主的格式来显示程序状况。 
+x ：显示所有程序，不以终端机来区分。
+（2）字段含义如下：
+UID       PID       PPID      C     STIME    TTY       TIME         CMD
+zzw       14124    13991       0     00:38      pts/0      00:00:00    grep --color=auto dae
 
+UID      ：程序被该 UID 所拥有
+PID      ：就是这个程序的 ID 
+PPID    ：则是其上级父程序的ID
+C          ：CPU使用的资源百分比
+STIME ：系统启动时间
+TTY     ：登入者的终端机位置
+TIME   ：使用掉的CPU时间。
+CMD   ：所下达的是什么指令
 
+2）依据端口号查找：
+netstat  -antp | grep  9191
+// 可以查找端口号为 9191 的进程
+-t ：列出 TCP 协议
+-u ：列出  UDP 协议
+-l  ：仅显示监听套接字(所谓套接字就是使应用程序能够读写与收发通讯协议(protocol)与资料的程序)
+-p : 显示进程标识符和程序名称，每一个套接字/端口都属于一个程序。
+-n: 不进行DNS轮询，显示IP(可以加速操作)
+
+12.C++将一个cpp文件中的变量应用到另一个cpp文件中
+情况说明：
+有两个cpp文件 ： A.cpp   B.cpp   头文件为 A.h  B.h
+其中A.cpp中定义了一个函数void a()，该函数生成一个变量C，现在要将C的值在B.cpp中使用。
+
+（1）方法1：
+在A.cpp中将C声明成全局变量，然后在B.cpp中先用extern type C先声明，然后调用。如使用cout<<C<<endl; 可用输出此时C的值。
+
+（2）方法2：
+在A.h中声明extern type C，然后在B.cpp中#include "A.h"，这样就可以在B中使用变量C了。
 
 
 
