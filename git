@@ -33,6 +33,12 @@ git branch -u origin/dev-stable    将本地所在分支与远程origin/dev-stab
 git push 别名 分支         推送本地分支到远程仓库（例：git push origin master）
 git pull 远程库别名 远程分支名      拉取远程库内容（例：git pull origin master）
 git commit --amend       可以查看修改提交描述信息
+git merge --abort       当合并的过程中，由于冲突难解决，你想放弃合并，回到未合并之前的状态；
+git log --graph --pretty=oneline --abbrev-commit    可以在命令行方便地查看提交图
+git checkout -b b-master origin/master  #作用是checkout远程的master分支，在本地起名为b-master分支，并切换到本地的b-master分支
+
+
+
 
 
 问题：
