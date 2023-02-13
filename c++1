@@ -236,3 +236,77 @@ char c : 2;} ;
 （1）std::this_thread::yield：　当前线程放弃执行，操作系统调度另一线程继续执行。即当前线程将未使用完的“CPU时间片”让给其他线程使用，等其他线程使用完后再与其他线程一起竞争"CPU"。
 （2）std::this_thread::sleep_for：　表示当前线程休眠一段时间，休眠期间不与其他线程竞争CPU，根据线程需求，等待若干时间。
 
+16.fflush()函数：更新缓存区。（C语言的，C++ 直接 << flush)
+头文件：#include<stdio.h>
+函数定义：int fflush(FILE *stream);
+函数说明：调用fflush()会将缓冲区中的内容写到stream所指的文件中去.若stream为NULL，则会将所有打开的文件进行数据更新。
+fflush(stdin)：刷新缓冲区,将缓冲区内的数据清空并丢弃。
+fflush(stdout)：刷新缓冲区,将缓冲区内的数据输出到设备。
+
+17.C++ 的字符串和sizeof
+   sizeof(string)和字符串的长度是无关的，在一个系统中所有的sizeof(string)是一个固定值，这个和编译器相关，string字符串是存储在堆上，这个属于动态分配的空间，对于别的整形浮点型数据类型则没有这个问题。
+   
+注意C和C++字符串的区别：
+C++:
+string  s = “”;
+string  s1 = “hello world”;
+// sizeof(s) == sizeof(s1) 不管里面存的什么东西，sizeof都是相等的，是固定值，由系统和编译器决定。
+
+C :
+    char  s2[] = “hello”              // sizeof(s2) = 6   最后会有一个’\0’
+    char  s3[] = “hello world”;        // sizeof(s3) = 12
+
+sizeof（string）的值，在vs2010上测得是固定28，用CLion，上面测得是4，出现了不一样的结果，在vs2013上是32.
+
+查阅了相关资料得出结论：string的实现在各库中可能有所不同，但是在同一库中相同一点是，无论你的string里放多长的字符串，它的sizeof()都是固定的，字符串所占的空间是从堆中动态分配的，与sizeof()无关。 sizeof(string)=4可能是最典型的实现之一，不过也有sizeof()为28、32字节的库实现。 但是MS2015测试后sizeof(string)=40.还是跟编译器有关.
+
+由于sizeof不能被编译成机器码，所以sizeof作用范围内，也就是()里面的内容也不能被编译，而是被替换成类型。=操作符返回左操作数的类型，所以a=3相当于int
+
+不要把sizeof当成函数，也不要看作一元操作符，把他当成一个特殊的编译预处理。
+
+18.C 和 C++字符串转换
+ambda 函数提示：No matching function for call to object of type
+原因：参数类型不匹配
+      （1）lambda函数定义中的参数和实际的参数有const和非const的区别
+      （2）C的字符串和C++的字符串类型是不一样的，要转换
+       C转C++:
+                char  c1[] = “hello”;
+                string  s = c1;
+       C++转C:
+                string  s = “hello”;
+                const  char  *c1 = s.c_str();
+注意：C++转C ,  c_str()返回的是const  char*类型，所以前面要加const，注意类型的匹配。
+
+19.在C 或 C++ 代码中加入汇编：
+#define PMC_START()   ({ __asm__ volatile("dmb sy\n\torr x3,x3,x3\n":::"memory"); })
+#define PMC_END()     ({ __asm__ volatile("dmb sy\n\torr x4,x4,x4\n":::"memory"); })
+
+20.fread
+https://blog.csdn.net/shulianghan/article/details/117338844?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522166269486716800182179975%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=166269486716800182179975&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-117338844-null-null.142^v47^pc_rank_34_ecpm25,201^v3^control&utm_term=fread&spm=1018.2226.3001.4187
+
+21.feof
+https://blog.csdn.net/konghouy/article/details/80530937?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522166270675816782391813871%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=166270675816782391813871&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-80530937-null-null.142^v47^pc_rank_34_ecpm25,201^v3^control&utm_term=feof&spm=1018.2226.3001.4187
+
+22.（1）char转整型
+	char c = ‘5’;
+	int  I = c – ‘0’ ;     // 不能用stoi(c);
+(2) char转字符串
+  char c = ‘5’;
+	strintg  str;       // 注：不存在 string s = c; 这样的写法，因为没有这样的构造函数
+	str = c;
+（3）int 转string
+	int a = 3;
+	string s = to_string(a);
+（4）int转char:（0-9）
+	int a = 3;
+	char c = a + 48;
+（5）C的字符串和C++的字符串类型是不一样的，要转换
+       C转C++:
+                char  c1[] = “hello”;
+                string  s = c1;
+       C++转C:
+                string  s = “hello”;
+                const  char  *c1 = s.c_str();
+注意：C++转C ,  c_str()返回的是const  char*类型，所以前面要加const，注意类型的匹配。
+
+
