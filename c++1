@@ -309,4 +309,170 @@ https://blog.csdn.net/konghouy/article/details/80530937?ops_request_misc=%257B%2
                 const  char  *c1 = s.c_str();
 注意：C++转C ,  c_str()返回的是const  char*类型，所以前面要加const，注意类型的匹配。
 
+23.关于delete和free的区别
+1. delete 用于释放 new 分配的空间，free 有用释放 malloc 分配的空间
+2. delete [] 用于释放 new [] 分配的空间
+3. delete 释放空间的时候会调用 相应对象的析构函数
+     顺便说一下new在分配空间的时候同时会调用对象的构造函数，对对象进行初始化，使用malloc则只是分配内存
+4. 调用free 之前需要检查 需要释放的指针是否为空，使用delete 释放内存则不需要检查指针是否为NULL
+5. free 和 delete 不能混用，也就是说new 分配的内存空间最好不要使用使用free 来释放，malloc 分配的空间也不要使用 delete来释放
+
+24.C/C++ 程序修改文件权限
+C语言函数
+函数原型
+函数名称：chmod
+函数原型：int chmod( const char *filename, int pmode );
+所属库：io.h
+函数功能：改变文件的读写许可设置，如果改变成功返回0，否则返回-1
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+int main(int argc,char* argv[]){
+
+    int sign1 = atoi(argv[2]);
+    printf("sign1 = %d\n",sign1);
+
+    unsigned int sign2 = sign1;
+    printf("sign2 = %u\n",sign2);
+
+if(chmod(argv[1], sign1)==0){       
+// 用sign1或者sign2都可以， 是 __mode_t 类型，是 8 进制的数据，注意进制转换
+        printf("success\n");
+    }
+    else{
+        printf("error\n");
+    }
+    return 0;
+}
+
+25.std::remove(v.begin(), v.end(), 1)
+简而言之，remove 移动了区间中的元素。其结果是，“需要被删除”的元素被移到了区间的尾部。它返回一个迭代器，指向第一个“需要被删除”的元素。
+
+用 vct.erase(std::remove_if(vct.begin(), vct.end(), IsOdd), vct.end()) 比直接用erase，效率提升非常大，算法整体复杂度低。
+
+26.dec、hex和oct（十进制、十六进制、八进制）
+dec是十进制 如	cout<<dec<<b 	就会把b转换成10进制再输出
+hex是16进制 如	cout<<hex<<b 	就会把b转换成16进制再输出
+oct是8进制 如	cout<<oct<<b 	就会把b转换成8进制再输出
+
+27.将cout输出写入文件
+#include <fstream>
+#include <iostream>
+#include <ostream>
+#include <streambuf>
+
+int main(){
+	//打开写入文件
+std::ofstream fileOut("b.txt");			
+//把cout的输出流重定向到输出文件的输出流，coutOld，指向原有的输出流，用于恢复
+std::streambuf *coutOld = std::cout.rdbuf(fileOut.rdbuf());			
+std::cout << "this is first test message" << std::endl;			//会被写入文件
+    std::cout.rdbuf(coutOld);									//恢复
+    std::cout << "this is second test message" << std::endl;		//输出
+    return 0;
+}
+
+注意：
+（1）cout可以调用rdbuf来替换缓冲区，但log不能通过调用rdbuf来替换缓冲区。因为ofstream的rdbuf并没有同样的功能
+（2）对流的重定向，只是作用在一个代码块内{}，出了这个{}，就恢复为原来的了，但是对在这个代码块内调用的函数，重定向也会生效。
+
+28.grep 查找文件内容，并输出到文件
+grep ‘search-string’ server.log > ~/log/test.log
+
+在文件server.log中查找 ‘search-string’ 并输出到用户目录下的/log/test.log文件中:
+
+如果test.log已存在，输出的内容将会覆盖test.log文件原有的内容
+如果test.log不存在，则会创建test.log文件并输出查找到的内容
+
+若想实现输出的日志只执行追加操作而不覆盖原有的内容，可以使用 >> 代替 >即可,如下：
+grep ‘search-string’ server.log >> ~/log/test.log
+同样的原理，tail、head等命令输出的内容也可以使用这样的方式输出到文件中
+注意：
+>  ：截断写，原有的内容清空
+	>> ：追加写
+
+29.setw() 设置输出宽度
+头文件为#include <iomanip>
+setw（）默认为右对齐，
+例如：  cout << setw(5) << “1” << endl;
+输出：    1               // 前面四个空格，总长度是5
+
+需要左对齐
+cout << left << setw(5) << “1” << endl;
+输出：1                   // 1后面有四个空格，总长度为5
+
+注意： 若setw(n) 中的n, 小于后面要输出的内容，后面内容会完全输出
+// 即，输出宽度取 n 和后面输出的长度的较大值。
+
+30.#define 后面加 # 和 ##
+（1）#define后面如果再加一个 # 号，那么这个符号的作用是文本参数“字符串化”，即出现在宏定义字符文本中的#把跟在后面的参数转换成一个C++字符串常量。
+#define POUT1(x)  printf(#x);
+#define POUT2(x)  printf(x);
+
+POUT1(Hello World!); //语法正确
+POUT1("Hello World!");//语法也正确
+
+POUT2(Hello World!);//语法错误
+POUT2("Hello World!");//语法正确
+
+（2）#define后面如果再加## 号，那么这个##的作用是将两个字符文本连接成一个字符文本，如果其中一个字符文本是宏定义的参数，连接会在参数替换后发生。
+
+#define SET1(arg) A##arg=arg;
+#define SET2(arg) Aarg=arg;
+
+SET1(1); //宏替换将SET1(1)替换为 A1=1；
+SET2(1);//宏替换将SET1(1)替换为Aarg=1
+
+31.sscanf
+（1）函数原型
+int sscanf( const char *, const char *, ...);
+int sscanf(const char *buffer,const char *format,[argument ]...);
+buffer存储的数据
+format格式控制字符串
+argument选择性设定字符串
+sscanf会从buffer里读进数据，依照format的格式将数据写入到argument里
+（2）头文件
+#include<stdio.h> 或者 #include <cstdio>
+
+ （3）取到指定字符集为止的字符串。如在下例中，取遇到大写字母为止的字符串。
+1
+2	sscanf ( "123456abcdedfBCDEF" , "%[^A-Z]" ,buf);
+printf ( "%s\n" ,buf);
+结果为：123456abcdedf
+
+（4）给定一个字符串iios/12DDWDFF@122，获取 / 和 @ 之间的字符串，
+先将 "iios/"过滤掉，再将非'@'的一串内容送到buf中
+1
+2	sscanf ( "iios/12DDWDFF@122" , "%*[^/]/%[^@]" ,buf);
+printf ( "%s\n" ,buf);
+结果为：12DDWDFF
+
+32.mkdir(fileName.c_str(),0)
+1. mkdir()函数创建路径的权限是其mode参数和进程的mask作用的结果，具体是mode&~mask
+2. 一般情况，root用户的mask值为022，那么我们调用mkdir()创建一个0777权限的路径，创建出的路径权限是0755。（0777&（~022））
+3. 不同的用户默认的默认的mask值可能不一样，比如我的测试环境，root用户默认的mask值是022，名为tt的普通用户默认的mask值是02
+4. 必须创建一个让所有用户拥有读写权限的路径时，需要将mask设置成0，这样创建的路径的权限则完全由mkdir()的mode参数决定。
+5. 在一个比较大的项目中，如果为了添加路径修改了mask的值，建议创建完路径后将mask值还原。
+6. 看到网上有人问mkdir()的mode参数设置成777为什么不行，对此需要注意的是，0777是八进制数字，如果非要用十进制设置mode参数的话，用511也是等效的，只是代码阅读起来就不那么直观了
+
+33.access()：Linux系统调用
+函数原型
+#include <unistd.h>
+int access(const char *pathname, int mode);
+参数说明：
+pathname：是文件的路径名+文件名，指定要测试的文件。文件的路径名可以是绝对路径也可以是相对路径。
+mode：指明测试哪种权限，有下面4种权限：
+F_OK 值为0，判断文件是否存在
+R_OK 值为4，判断对文件是否有读权限
+W_OK 值为2，判断对文件是否有写权限
+X_OK 值为1，判断对文件是否有可执行权限
+返回值：当判断具有权限时，返回0；否则返回-1 
+
+
+
+
+
 
