@@ -1,0 +1,248 @@
+66.去掉文件的前几列
+awk '{$1="";$2="";$3="";print $0}'  e  > err
+去掉e文件的前3列，写入新文件err
+
+65.压缩和解压
+1、tar包和gz包
+tar包和gz包是两个不同的文件包，有三种不同后缀。.tar .gz .tar.gz
+tar包：使用tar命令，打包文件或者文件夹，只打包，不压缩
+gz包：使用gzip命令，只压缩文件，不打包，所以gz包操作不能对文件夹直接操作，如果要对文件夹下所有文件进行压缩，使用-r参数，gzip -r 文件夹路径
+tar.gz：使用tar加-z参数，tar -zcvf filename.tar.gz dir/file 打包压缩文件或者文件夹
+tar参数有 z，c，x，v，f
+-z 表示压缩操作类型是 .tar.gz
+-c 表示当前行为是打包
+-x 表示当前行为是解压文件包
+-v 参数要求显示命令执行过程
+-f 指定打包后文件名
+-C 解压到指定路径
+常用压缩打包命令：
+tar -zcvf tarame.tar.gz dir/files
+常用解压缩命令：
+tar -zxvf tarname.tar.gz -C 指定解压后文件存放地址
+gzip常用参数有 d，c，t，v
+-d 解压gz压缩包
+-c 控制台窗口打印压缩后文件内容，源文件不变，执行后不生成压缩包
+-v 显示压缩百分比
+-t 测试已压缩文件是否正确，需要文件压缩成压缩文件后执行
+
+64.linux删除空行或空格
+一、Linux系统利用脚本删除空行的4种方法
+1）用tr命令
+cat 文件名 |tr -s ‘\n’
+2）用sed命令
+cat 文件名 |sed ‘/^$/d’
+3）用awk命令
+cat 文件名 |awk ‘{if($0!=””)print}’
+cat 文件名 |awk ‘{if(length !=0) print $0}’
+4）用grep命令
+grep -v “^$” 文件名
+二、Linux系统利用脚本删除空格的3种方法
+1、删除行首空格
+sed ‘s/^[ \t]*//g’
+说明：
+此种方法是sed命令标准的替换命令操作，以s开头，g表示全部替换。
+由于是删除行首空格，所示使用^操作符，方括号总的空格或tab中的任意一种，这是正则表达式的规范。
+中括号右边是*，表示一个或多个。
+整体意思是：用空字符去替换一个或多个用空格或tab开头的本体字符串
+2、删除行末空格
+sed ‘s/[ \t]*$//g’
+和上面稍微有些不同是前面删除了^符，在后面加上了美元符，这表示以xx结尾的字符串为对象。
+但是要注意在KSH中，Tab并不是\t而是直接打入一个Tab就可以了。
+3、删除所有的空格
+sed s/[[:space:]]//g
+
+63. 会跳过getline()的输入
+cin >> ch;
+getline(cin, s);    // 这里没有输入等待，直接跳过
+
+// 原因在于 cin 读取年份时，会将回车生成的换行符留在输入队列中
+// getline()看到换行符，认为是空行，将空的字符串赋给 s
+
+解决： 换为下面一行就可以了，get()会读取到换行符并丢弃掉
+(cin >> num).get();
+
+62.vim删除多行
+按ESC，然后输入下面的命令，然后回车。
+
+1. ：num d
+删除num行
+2. ：begin, endd
+从begin行删除到end行
+
+3. 删除当前行之前的所有行
+:1,.-1d
+
+4. 删除当前行之后的所有行
+按ESC，然后输入下面的命令，然后回车。
+:.+1,$d		// 注意：前面有个小数点，表示当前行
+:num,$d
+
+跳出while (getline(cin, s))循环
+1、windows下：输入流对象cin输入的结束符在windows下是ctrl+z，所以，按下ctrl+z，然后回车，程序就正常跳出循环了。
+2、UNIX/Linux下：UNIX/Linux模拟流/文件结束标志为CRTL+D
+
+60.刷新缓冲区
+（1）std::endl
+刷新缓冲区，并且添加一个换行
+ofs << endl;
+
+(2) std::flush
+只是刷新缓冲区
+ofs << flush;
+
+注意： ends 只是添加一个空格，并不能刷新缓冲区
+
+59.C++实现命令行
+（1）一般命令行
+#include <cstdlib>
+int main()
+{   
+    system("mkdir systemm");
+    system("cd systemm");
+    system("touch systest");
+    return 0;
+}
+// 会实现创建目录systemm 和文件systest， 在同一级， 文件不在目录下
+
+（2）更改文件权限
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+int main(int argc,char* argv[]){
+
+    int sign1 = atoi(argv[2]);
+    printf("sign1 = %d\n",sign1);
+
+if(chmod(argv[1], sign1)==0){  
+// argv[1] 是文件名， sign1 是 __mode_t 类型，是 8 进制的数据，注意进制转换
+        printf("success\n");
+    }
+    else{
+        printf("error\n");
+    }
+    return 0;
+}
+
+// 会更改文件的权限
+
+
+[C++]出错member access into incomplete type
+在c++中，有四个文件demoA.h, demoA.cpp, demoB.h, demoB.cpp。
+在demoA.h中有一个类为class demoA, 在demoB.h中有一个类为class demoB。
+如果demoA类要用到demoB类，并且demoB类也要用到demoA类，那么必须要如下：
+1、在demoA类的cpp文件中包含demoB类的头文件路径；
+2、在demoB类的h文件中加Class demoA，同时也要在demoB类的cpp文件中添加demoA类的头文件路径；
+如下：
+// demoA.h
+class demoA
+{
+    demoB * b;
+};
+
+// demoA.cpp
+#include "demoB.h"
+
+// demoB.h
+class demoA;
+class demoB
+{
+    demoA * parent;
+};
+
+// demoB.cpp
+#include "demoA.h"
+
+这样就好了。
+如果在demoB.cpp中没有加入demoA.h，那么会报错：member access into incomplete type
+
+
+57.强制转换
+C++的强制转换方式比C语言更加丰富，常见的有四个：
+1，const_cast
+这个操作符可以去掉变量const属性或者volatile属性的转换符，这样就可以更改const变量了。
+
+2，static_cast
+static_cast 这个操作符相当于C语言中的强制类型转换的替代品。多用于非多态类型的转换，比如说将int转化为double。但是不可以将两个无关的类型互相转化。（在编译时期进行转换）
+
+3，dynamic_cast
+dynamic_cast操作符 可以安全的将父类转化为子类，子类转化为父类都是安全的。所以你可以用于安全的将基类转化为继承类，而且可以知道是否成功，如果强制转换的是指针类型，失败会返回NULL指针，如果强制转化的是引用类型，失败会抛出异常。
+
+4，reinterpret_cast
+dynamic_cast 转换符只能用于含有虚函数的类。
+
+reinterpret_cast用在任意指针（或引用）类型之间的转换；以及指针与足够大的整数类型之间的转换；从整数类型（包括枚举类型）到指针类型，无视大小。
+
+需要注意的是：reinterpret_cast<xx>(yyy)，xx与yyy必须有一个值为指针类型。
+
+当static_cast转换不被编译器允许时，在你真的确保转换是可以安全转换时，你可以使用reinterpret_cast
+
+#include <iostream> // std::cout std::endl
+ 
+class int_type
+{
+public:
+    int value;
+};
+ 
+int main(void)
+{
+    int_type t;
+    t.value = 233;
+    int *p = reinterpret_cast<int *>(&t);
+    *p = 666;
+    std::cout << t.value << std::endl;
+    return 0;
+}
+
+// 666
+
+左值、左值引用、右值、右值引用
+1、左值和右值的概念
+         左值是可以放在赋值号左边可以被赋值的值；左值必须要在内存中有实体；
+         右值当在赋值号右边取出值赋给其他变量的值；右值可以在内存也可以在CPU寄存器。
+         一个对象被用作右值时，使用的是它的内容(值)，被当作左值时，使用的是它的地址。
+2、引用
+        引用是C++语法做的优化，引用的本质还是靠指针来实现的。引用相当于变量的别名。
+        引用可以改变指针的指向，还可以改变指针所指向的值。
+        引用的基本规则：
+1.	声明引用的时候必须初始化，且一旦绑定，不可把引用绑定到其他对象；即引用必须初始化，不能对引用重定义；
+2.	对引用的一切操作，就相当于对原对象的操作。
+3、左值引用和右值引用
+    3.1 左值引用
+         左值引用的基本语法：type &引用名 = 左值表达式；
+    3.2 右值引用
+        右值引用的基本语法type &&引用名 = 右值表达式；
+        右值引用在企业开发人员在代码优化方面会经常用到。
+        右值引用的“&&”中间不可以有空格。
+
+56. resize() 和 reserve()
+大小（size）：是指该容器中实际的元素个数，是可以通过下表去访问的，上面的代码中，一开始只定义了一个空的容器，这个容器里面没有元素；在resize(10)之后，容器中就会添加10个元素，这10个元素会被初始化为0。这个时候是可以通过容器的下标来获取元素的。
+
+容量（capacity）：是指给容器能够容纳最大的元素个数，它申请到的容量不会进行赋初始值，所以不能通过下标来进行访问。假设capacity = 10，不一定就说明当前容器的元素是10个，只能说明你的容器最多只能容纳10个元素。
+
+resize() 的作用是分配了空间，并且也给多分配的空间部分创建了对象，就是原本容器长度size = 5，并且里面有5个元素，当使用resize(10)后，容器的后面5个元素会被初始化为0。resize()后会修改capacity的大小，也会修改size的大小，resize()可以是两个参数，第一个参数代表容器的大小，第二个参数代表扩容后初始化的数值，默认为0；
+
+reserve() 表示给容器预留了空间，但是并没有创建对象，需要我们在后面添加元素，像insert()或者push_back()。reserve()后只修改了capacity的大小，不改变size的大小。reserve()只能有一个参数
+
+
+52.线程
+（1）join或detach
+thread对象构造完成（线程开始执行）之后，对象析构之前，我们必须选择是等待它（join）或者让它在后台运行（detach），如果你在thread对象析构前没有这么做，那么线程将会终止，因为thread的析构函数中调用了std::terminate()。
+
+detach：使得即使thread对象析构，线程也能继续运行，但是注意，我们要确保线程结束之前它所访问的数据都是有效的。
+join：函数将等待该线程完成，然后继续执行后续语句。join将清理线程相关的存储空间
+
+thread对象只能join或detach一次，调用过join或detach的对象再调用joinable将返回false
+一旦thread对象调用了detach，线程与thread对象将不再有关联，我们也没有直接的方式与线程通信，也不再能join或detach该线程，此时线程的所有权属于C++运行时库，它保证在线程退出时相关资源被回收。分离的线程通常称为守护进程，它们通常在程序的整个生命周期运行，做一些监控、清理工作。同样的thread对象只能被detach一次
+
+thread t1(func,1);
+t1.join() 的顺序没有关系，只要写了就行，在定义位置执行
+
+
+51. –pthread 和 –lpthread
+// 尽量用 -pthread
+（1）编译选项中指定 -pthread 会附加一个宏定义 -D_REENTRANT，该宏会导致 libc 头文件选择那些thread-safe的实现；链接选项中指定 -pthread 则同 -lpthread 一样，只表示链接 POSIX thread 库。由于 libc 用于适应 thread-safe 的宏定义可能变化，因此在编译和链接时都使用 -pthread 选项而不是传统的 -lpthread 能够保持向后兼容，并提高命令行的一致性。
+（2）为了可移植性：在Linux中，pthread是作为一个单独的库存在的（libpthread.so），但是在其他Unix变种中却不一定，比如在FreeBSD中是没有单独的pthread库的，因此在FreeBSD中不能使用-lpthread来链接pthread，而使用-pthread则不会存在这个问题，因为FreeBSD的编译器能正确将-pthread展开为该系统下的依赖参数。同样道理，其他不同的变种也会有这样那样的区别，如果使用-lpthread，则可能在移植到其他Unix变种中时会出现问题，为了保持较高的可移植性，我们最好还是使用-pthread（尽管这种做法未被接纳成为C标准，但已基本是事实标准）。
+（3）添加额外的标志：在多数系统中，-pthread会被展开为“-D_REENTRANT -lpthread”，即是除了链接pthread库外，还先定义了宏_REENTRANT。定义这个宏的目的，是为了打开系统头文件中的各种多线程支持分支。比如，我们常常使用的错误码标志errno，如果没有定义_REENTRANT，则实现为一个全局变量；若是定义了_REENTRANT，则会实现为每线程独有，从而避免线程竞争错误。
