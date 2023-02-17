@@ -246,3 +246,173 @@ t1.join() 的顺序没有关系，只要写了就行，在定义位置执行
 （1）编译选项中指定 -pthread 会附加一个宏定义 -D_REENTRANT，该宏会导致 libc 头文件选择那些thread-safe的实现；链接选项中指定 -pthread 则同 -lpthread 一样，只表示链接 POSIX thread 库。由于 libc 用于适应 thread-safe 的宏定义可能变化，因此在编译和链接时都使用 -pthread 选项而不是传统的 -lpthread 能够保持向后兼容，并提高命令行的一致性。
 （2）为了可移植性：在Linux中，pthread是作为一个单独的库存在的（libpthread.so），但是在其他Unix变种中却不一定，比如在FreeBSD中是没有单独的pthread库的，因此在FreeBSD中不能使用-lpthread来链接pthread，而使用-pthread则不会存在这个问题，因为FreeBSD的编译器能正确将-pthread展开为该系统下的依赖参数。同样道理，其他不同的变种也会有这样那样的区别，如果使用-lpthread，则可能在移植到其他Unix变种中时会出现问题，为了保持较高的可移植性，我们最好还是使用-pthread（尽管这种做法未被接纳成为C标准，但已基本是事实标准）。
 （3）添加额外的标志：在多数系统中，-pthread会被展开为“-D_REENTRANT -lpthread”，即是除了链接pthread库外，还先定义了宏_REENTRANT。定义这个宏的目的，是为了打开系统头文件中的各种多线程支持分支。比如，我们常常使用的错误码标志errno，如果没有定义_REENTRANT，则实现为一个全局变量；若是定义了_REENTRANT，则会实现为每线程独有，从而避免线程竞争错误。
+
+49.LINUX修改.bashrc之后，生效的办法
+1.	关闭当前终端，另起一个。
+2.	source .bashrc
+
+50.do{}while(0)
+总的来说，在宏定义中使用do{…}while(0);是为了在宏定义中使用多个语句块而不会受大括号和分号的影响。
+
+来看看下面的例子：
+
+#define fun(x) {func1(x);func2(x);}
+if (true)
+    fun(x);
+else
+    retrun 0;
+上述代码会展开成：
+
+if (true){
+    func1(x);
+    func2(x);
+};
+else
+return 0;
+
+我们可以看到if…else…语句出现了语法错误。
+将宏定义改为do{…}while(0);的形式：
+
+#define fun(x) do{func1(x);func2(x);}while(0);
+if (true)
+    fun(x);
+else
+return 0;
+
+上述代码会展开成：
+if (true)
+    do{
+        func1(x);
+        func2(x);
+    }while(0);
+else
+    return 0;
+上述展开的代码无论从语法上还是逻辑上都没有错误了。总的来说，在宏定义中使用do{…}while(0);是为了在宏定义中使用多个语句块而不会受大括号和分号的影响。
+
+
+48. setiosflags( ios::fixed )  setprecision( )
+（1）头文件为:include<iomanip>.
+在遇到要计算浮点数且希望能控制其输出、精度、小数点后的位数等时，用setiosflags( ios::fixed )来控制。
+
+（2）setprecision( )
+使用setprecision(n)可控制输出流显示浮点数的数字个数。C++默认的流输出数值有效位是6。setprecision(n)就是输出n个数，会有四舍五入。
+（3）
+double s=20.7843000;
+    cout << s << endl;
+    cout << "setprecision( 2 )"<< setprecision( 2 )<< s << endl;
+
+setprecision( 2 )21
+setprecision( 3 )20.8
+输出结果四舍五入，且后面的0不会输出
+（4）
+setprecision(n)与setiosflags(ios::fixed)合用，可以控制小数点右边的数字个数。
+double s=20.7843000;
+    cout << s << endl;
+    cout << setiosflags( ios::fixed );
+     cout << "setprecision( 2 )"<< setprecision( 2 )<< s << endl;
+    cout << "setprecision( 3 )"<< setprecision( 3 )<< s << endl;
+
+setprecision( 2 )20.78
+setprecision( 3 )20.784
+此时控制的是小数位数，不够会补0
+
+
+47.final
+C++中的final关键字
+1.1 final关键字修饰类
+用来修饰类，让该类不能被继承，理解：使得该类终结！
+
+class XiaoMi {
+public:
+	XiaoMi(){}
+};
+
+class XiaoMi2 final : public XiaoMi  {
+	XiaoMi2(){}
+};
+
+class XiaoMi3 : public XiaoMi2 {  //不能把XiaoMi2作为基类
+
+1.2 final关键字修饰虚函数
+用来修饰类的虚函数，使得该虚函数在子类中，不能被重写，理解：使得该功能终结！
+class XiaoMi {
+public:
+	virtual void func() final;
+};
+
+void XiaoMi::func() { //不需要再写final
+	cout << "XiaoMi::func" << endl; 
+}
+
+class XiaoMi2 : public XiaoMi  {
+public:
+	void func() {}; // 错误！不能重写func函数
+};
+注意：
+final只能放在放在函数符()的后面，只能用来修饰虚函数，不能用来修饰普通的函数！
+
+45.access()：Linux系统调用
+函数原型
+#include <unistd.h>
+int access(const char *pathname, int mode);
+参数说明：
+pathname：是文件的路径名+文件名，指定要测试的文件。文件的路径名可以是绝对路径也可以是相对路径。
+mode：指明测试哪种权限，有下面4种权限：
+F_OK 值为0，判断文件是否存在
+R_OK 值为4，判断对文件是否有读权限
+W_OK 值为2，判断对文件是否有写权限
+X_OK 值为1，判断对文件是否有可执行权限
+返回值：当判断具有权限时，返回0；否则返回-1 
+
+
+44. mkdir(fileName.c_str(),0)
+1. mkdir()函数创建路径的权限是其mode参数和进程的mask作用的结果，具体是mode&~mask
+2. 一般情况，root用户的mask值为022，那么我们调用mkdir()创建一个0777权限的路径，创建出的路径权限是0755。（0777&（~022））
+3. 不同的用户默认的默认的mask值可能不一样，比如我的测试环境，root用户默认的mask值是022，名为tt的普通用户默认的mask值是02
+4. 必须创建一个让所有用户拥有读写权限的路径时，需要将mask设置成0，这样创建的路径的权限则完全由mkdir()的mode参数决定。
+5. 在一个比较大的项目中，如果为了添加路径修改了mask的值，建议创建完路径后将mask值还原。
+6. 看到网上有人问mkdir()的mode参数设置成777为什么不行，对此需要注意的是，0777是八进制数字，如果非要用十进制设置mode参数的话，用511也是等效的，只是代码阅读起来就不那么直观了
+
+43.sscanf
+（1）函数原型
+int sscanf( const char *, const char *, ...);
+int sscanf(const char *buffer,const char *format,[argument ]...);
+buffer存储的数据
+format格式控制字符串
+argument选择性设定字符串
+sscanf会从buffer里读进数据，依照format的格式将数据写入到argument里
+（2）头文件
+#include<stdio.h> 或者 #include <cstdio>
+
+ （3）取到指定字符集为止的字符串。如在下例中，取遇到大写字母为止的字符串。
+1
+2	sscanf ( "123456abcdedfBCDEF" , "%[^A-Z]" ,buf);
+printf ( "%s\n" ,buf);
+结果为：123456abcdedf
+
+（4）给定一个字符串iios/12DDWDFF@122，获取 / 和 @ 之间的字符串，
+先将 "iios/"过滤掉，再将非'@'的一串内容送到buf中
+1
+2	sscanf ( "iios/12DDWDFF@122" , "%*[^/]/%[^@]" ,buf);
+printf ( "%s\n" ,buf);
+结果为：12DDWDFF
+
+
+42. #define 后面加 # 和 ##
+（1）#define后面如果再加一个 # 号，那么这个符号的作用是文本参数“字符串化”，即出现在宏定义字符文本中的#把跟在后面的参数转换成一个C++字符串常量。
+#define POUT1(x)  printf(#x);
+#define POUT2(x)  printf(x);
+
+POUT1(Hello World!); //语法正确
+POUT1("Hello World!");//语法也正确
+
+POUT2(Hello World!);//语法错误
+POUT2("Hello World!");//语法正确
+
+（2）#define后面如果再加## 号，那么这个##的作用是将两个字符文本连接成一个字符文本，如果其中一个字符文本是宏定义的参数，连接会在参数替换后发生。
+
+#define SET1(arg) A##arg=arg;
+#define SET2(arg) Aarg=arg;
+
+SET1(1); //宏替换将SET1(1)替换为 A1=1；
+SET2(1);//宏替换将SET1(1)替换为Aarg=1
