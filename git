@@ -29,6 +29,7 @@ git branch -vv        查看本地分支+上次提交的信息+本地和远程�
 git remote add 别名 远程地址     创建远程仓库别名
 git remote -v         看远程仓库别名和链接
 git clone -b 分支名 url   克隆需要的分支（git clone -b develop ssh://git@lfg-y.codehub.huawei.com:2222/LinxCMT/TraceManager.git）
+git branch --unset-upstream     解除本地分支与远程分支的链接
 git branch -u origin/dev-stable    将本地所在分支与远程origin/dev-stable分支相连接
 git push 别名 分支         推送本地分支到远程仓库（例：git push origin master）
 git pull 远程库别名 远程分支名      拉取远程库内容（例：git pull origin master）
@@ -36,7 +37,23 @@ git commit --amend       可以查看修改提交描述信息
 git merge --abort       当合并的过程中，由于冲突难解决，你想放弃合并，回到未合并之前的状态；
 git log --graph --pretty=oneline --abbrev-commit    可以在命令行方便地查看提交图
 git checkout -b b-master origin/master  #作用是checkout远程的master分支，在本地起名为b-master分支，并切换到本地的b-master分支
+git pull origin master --rebase   更远程新源到本地
 
+修改本地分支名称
+git branch -m oldBranchName newBranchName
+
+将本地分支的远程分支删除
+git push --delete origin oldBranchName
+
+将改名后的本地分支推送到远程，并将本地分支与之关联
+git push --set-upstream origin newBranchName
+
+
+设置别名：
+Home目录下.gitconfig添加
+[alias]
+     lg = log --graph --pretty=oneline --abbrev-commit
+git config –glo
 
 
 
@@ -88,6 +105,41 @@ fatal: Exiting because of an unresolved conflict.
 （4）执行提交： git  commit  -m  “  “
    (此时使用 git commit 命令时不能带文件名）
 发现后面 MERGING 消失，变为正常
+
+4.git pull  
+remote: HTTP Basic: Access denied
+fatal: Authentication failed for
+可能原因：更改了密码，所以无法访问
+解决：
+（1）如果账号密码有变动 用这个命令 git config –system –unset credential.helper 重新输入账号密码 应该就能解决了
+
+（2）如果用了第一个命令 还不能解决问题那么 用这个命令：git config –global http.emptyAuth true
+
+（3）直接使用命令行自动登录git clone --bare http://username:password@https:xxx.cn/package1/myProject.git
+如果username使用的邮箱，那么@要用%40来代替，如我的邮箱为abc@qq.com 写成 abc%40qq.com
+
+（4）如果以上三个方法不起作用，那么采用以下方法：
+进入控制面板>>查看方式改为小图标>>凭据管理器>>windows凭据>>普通凭据，在里面找到git，点开编辑密码，更新为最新密码之后就可以正常操作了
+
+6.rebase时出现CONFLICT (delete/modify)
+原因：可能是远程删除了代码，本地的代码还在，这时git不知道怎么做
+解决：git rm filename    // 删除本地文件就可以了
+
+git diff
+1. 查看两分支间，所有有差异的文件列表
+git diff branch1 branch2 --stat
+2. 查看两分支间，所有有差异的文件的详细差异
+git diff branch1 branch2
+3. 查看两分支间，指定文件的不同
+git diff  branch1 branch2 filename
+
+git reset
+1. 撤回还未 push 的 commit
+git reset --soft HEAD^
+
+
+
+
 
 
 
