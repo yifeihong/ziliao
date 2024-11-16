@@ -130,7 +130,7 @@
                 // 显示最大值、第二大值、最小值、第二小值的文本
                 {
                     type: 'group',
-                    left: '75%',
+                    right: '15%',
                     top: '25%',
                     children: [
                         {
@@ -138,7 +138,7 @@
                             zlevel: 2, // 确保文字在网格线上面
                             style: {
                                 text: '最大值: ' + categories[max1Index] + ' (' + max1 + ')',
-                                textAlign: 'center',
+                                textAlign: 'right',
                                 fill: '#333',
                                 fontWeight: 'bold' // 加粗文本
                             }
@@ -148,8 +148,8 @@
                             top: 20, // 调整这个值来改变行间距
                             zlevel: 2, // 确保文字在网格线上面
                             style: {
-                                text: '第二大值: ' + categories[max2Index] + ' (' + max2 + ')',
-                                textAlign: 'center',
+                                text: '第二大gggggggggggggggg值: ' + categories[max2Index] + ' (' + max2 + ')',
+                                textAlign: 'right',
                                 fill: '#333',
                                 fontWeight: 'bold' // 加粗文本
                             }
@@ -158,7 +158,7 @@
                 },
                 {
                     type: 'group',
-                    left: '25%',
+                    left: '20%',
                     top: '75%',
                     children: [
                         {
@@ -166,7 +166,7 @@
                             zlevel: 2, // 确保文字在网格线上面
                             style: {
                                 text: '最小值: ' + categories[min1Index] + ' (' + min1 + ')',
-                                textAlign: 'center',
+                                textAlign: 'right',
                                 fill: '#333',
                                 fontWeight: 'bold' // 加粗文本
                             }
@@ -177,7 +177,7 @@
                             zlevel: 2, // 确保文字在网格线上面
                             style: {
                                 text: '第二小值: ' + categories[min2Index] + ' (' + min2 + ')',
-                                textAlign: 'center',
+                                textAlign: 'right',
                                 fill: '#333',
                                 fontWeight: 'bold' // 加粗文本
                             }
