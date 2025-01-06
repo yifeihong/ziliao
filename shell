@@ -47,3 +47,88 @@ $* 与 $@ 区别：
 4. shell  脚本中调用另一个脚本
    . 绝对路径
 // 注意 ：  . 和绝对路径之间有空格
+
+
+#!/bin/bash
+
+SCONS=$(which scons)
+PYTHON=$(which python3)
+
+BUILD_OPT="ARM"
+CFLAGS="${CFLAGS} -DLINX_ARCH"
+LDFLAGS="${LDFLAGS}"
+CC="gcc"
+CXX="g++"
+MODE="opt"
+DB="false"
+JOBS=40
+
+usage() {
+    echo "Usage: $0 [-m MODE] [-j JOBS] [-l] [-d] [-h]"
+    echo "Description:"
+    echo "  -m MODE, MODE can be opt|debug|fast|prof|perf, default: opt"
+    echo "  -j JOBS, default 40"
+    echo "  -l, use ARM_LinxCPU as build_opt, defaultly use ARM"
+    echo "  -d, generate compile_commands.json, require clang installed,"
+    echo "      default false"
+    echo "  -h, print this message"
+}
+
+while getopts 'm:j:dhl' options; do
+    case "${options}" in
+        m)
+            MODE=${OPTARG}
+            ;;
+        j)
+            JOBS=${OPTARG}
+            ;;
+        d)
+            CFLAGS="${CFLAGS} -MJ \\\$TARGET\.json"
+            CC="clang"
+            CXX="clang++"
+            DB="true"
+            ;;
+        h)
+            usage
+            exit 0
+            ;;
+        l)
+            BUILD_OPT="ARM_LinxCPU"
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+if [[ "$MODE" == "debug" && "$CXX" == "clang++" ]]; then
+    CFLAGS="${CFLAGS} -fstandalone-debug"
+    LDFLAGS="${LDFLAGS} -fstandalone-debug"
+fi
+
+echo "Compile commands:"
+echo "$PYTHON $SCONS \
+SLICC_HTML=yes CCFLAGS_EXTRA=\"$CFLAGS\" \
+LDFLAGS_EXTRA=\"${LDFLAGS}\" CC=\"$CC\" CXX=\"$CXX\" \
+build/$BUILD_OPT/gem5.$MODE -j${JOBS}"
+
+$PYTHON $SCONS \
+    SLICC_HTML=yes CCFLAGS_EXTRA="$CFLAGS" \
+    LDFLAGS_EXTRA="${LDFLAGS}" CC="$CC" CXX="$CXX" \
+    build/$BUILD_OPT/gem5.$MODE -j${JOBS}
+
+if [[ $? -eq 0 && "$DB" == "true" ]]; then
+    echo "Generating compile_commands.json"
+    shopt -s globstar
+    pushd build
+    rm -f compile_commands.json
+    sed -e '1s/^/[\n/' -e '$s/,$/\n]/' **/*.json > compile_commands.json
+    if [ -f "compile_commands.json" ]; then
+        sed -i -e 's/'"build\/${BUILD_OPT}\/"'/src\//g' \
+            -e 's/''"-I", "build\/'"${BUILD_OPT}"'"/"-I", "src", "-I", "build\/'"${BUILD_OPT}"'"/g' \
+            compile_commands.json
+    fi
+    popd
+fi
+
