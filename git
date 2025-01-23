@@ -48,6 +48,20 @@ git push --delete origin oldBranchName
 将改名后的本地分支推送到远程，并将本地分支与之关联
 git push --set-upstream origin newBranchName
 
+git log --name-status    可以看到修改了哪些文件
+git commit  --amend     可以修改描述信息
+git diff  local-dev  remote-dev  比较本地分支与远程分支的差异
+git  cherry-pick  commitid     把其他分支的commit提交同步到当前分支
+
+git diff <版本号1> <版本号2> <文件路径>
+`<版本号1>` 和 `<版本号2>` 分别表示需要比较的两个版本号，
+`<文件路径>` 表示需要比较的文件路径
+
+git diff abc123 def456 example.txt
+比较版本号为 `abc123` 和 `def456` 的同一个文件 `example.txt` 的修改
+
+
+
 
 设置别名：
 Home目录下.gitconfig添加
@@ -124,6 +138,13 @@ fatal: Authentication failed for
 6.rebase时出现CONFLICT (delete/modify)
 原因：可能是远程删除了代码，本地的代码还在，这时git不知道怎么做
 解决：git rm filename    // 删除本地文件就可以了
+
+7.git clone 时报错
+Host key verification failed.
+fatal: Could not read from remote repository.
+Please make sure you have the correct access rights
+解决：把ssh链接改为https链接
+
 
 git diff
 1. 查看两分支间，所有有差异的文件列表
