@@ -21,6 +21,41 @@ Value: .second(->second)
 存在某元素：count(“”)存在返回1否则返回0
 查找某元素：find()
 
+3.（1）extern   TmParameters（类）   g_params;
+extern声明一个变量，别的地方只要包含它所在的头文件，就可以直接使用这个变量了！
+ （2）链接指示：
+extern  “C”  size_t  strlen(const  char *)       //单语句链接指示
+    extern  “C” {                                   //复合语句链接指示
+          int  strcmp(const  char*, const  char*);
+          char  *strcat(char* , const  char *);
+    }
+注意：链接指示不能出现在类定义或函数定义的内部
+ （3）void  (*pf1)(int);                  //指向一个C++函数
+      extern  “C”  void  (*pf2)(int);      //指向一个C函数
+      pf1 = pf2;                         //错误：pf1和pf2的类型不同
+ （4）extern  “C”  void  f1(void(*)(int));
+     这个链接指示不仅对f1有效，对函数指针同样有效，当调用f1时，必须传给它一个C的函数名或者指针
+
+4.  dynamic_cast
+有条件转换，动态类型转换，运行时检查类型安全（转换失败返回NULL）：
+
+dynamic_cast < type-id > ( expression)
+该运算符把expression转换成type-id类型的对象。
+
+writer_ = dynamic_cast<DirectWriterImpl*>(w);   
+//把 DirectWriter *w 转换成 DirectWriterImpl*
+
+Type-id可以是类的指针、类的引用或者void*。如果type-id是类指针类型，那么expression也必须是一个指针，如果type-id是一个引用，那么expression也必须是一个引用。
+
+    1 将一个基类对象指针（或引用）cast到继承类指针，dynamic_cast会根据基类指针是否真正指向继承类指针来做相应处理， 即会作出一定的判断。
+    2 若对指针进行dynamic_cast，失败返回null，成功返回正常cast后的对象指针；
+    3 若对引用进行dynamic_cast，失败抛出一个异常，成功返回正常cast后的对象引用。
+    4 dynamic_cast在将父类cast到子类时，父类必须要有虚函数，否则编译器会报错。
+    5 dynamic_cast主要用于类层次间的上行转换和下行转换，还可以用于类之间的交叉转换。
+    6 在类层次间进行上行转换时，dynamic_cast和static_cast的效果是一样的；
+    7 在进行下行转换时，dynamic_cast具有类型检查的功能，比static_cast更安全。
+
+
 3.类的静态成员
 （1）在数据成员声明、函数前面加上关键字static 使得其与类关联在一起
 （2）静态数据成员
@@ -54,6 +89,37 @@ mutable：mutable修饰符。默认情况下，Lambda函数总是一个const函�
 4.[&]表示引用传递方式捕捉所有父作用域的变量（包括this）；
 5.[this]表示值传递方式捕捉当前的this指针。
 
+7.  int glob(const char *pattern,  int flags,
+int errfunc(const char *epath, int eerrno),  glob_t *pglob);
+     glob函数搜索匹配函数pattern中的参数，如/*是匹配根文件下的所有文件（不包括隐藏文件，要找的隐藏文件需要从新匹配），然后会将匹配出的结果存放到 pglob，即第4个参数中，第二个参数能选择匹配模式，如是否排序，或者在函数第二次调用时，是否将匹配的内容追加到pglob中，等，第3个参数是查看错误信息用，一般置为NULL
+
+ glob_t  glob_res;
+ int  res = glob(pattern.c_str(), 0, err_handle, &glob_res);    
+//c_str()返回一个指向正规C字符串的指针常量, 内容与本string串相同
+//作用是将满足 pattern.c_str() 条件的文件名写入glob_res
+
+ if (res != 0) {           //如果发生错误会返回非0                    
+        if (res == GLOB_NOMATCH)
+            printf("error: glob failed, no match.\n");
+        else
+            printf("error: glob path error: %d\n", res);
+        return pathes;
+    }
+ for (size_t i = 0; i < glob_res.gl_pathc; i++)
+        pathes.push_back(glob_res.gl_pathv[i]);           //满足条件的文件会写入pathes
+
+8. std::to_string(pid)     把pid转换成字符串格式
+   pipes_glob_ = prefix + std::to_string(pid) + ".core.*.fifo";
+    //拼接成新的字符串
+（1）std::string  pi;
+     pi = “pi  is  “ + std::to_string(3.1415926);
+输出pi为：pi  is  3.141593 （若是小数会输出6位，不论多于还是少于6位）
+（2）std::string  p;
+     p = std::to_string(1+2+4+7+14) + “is  a  perfect  number”;
+     输出p为： 28  is  a  perfect  number 
+
+
+
 5.std::ostringstream  out；
 （1）ostringstream是C++的一个字符集操作模板类，定义在sstream.h头文件中。ostringstream类通常用于执行C风格的串流的输出操作，格式化字符串，避免申请大量的缓冲区，替代sprintf
 （2）std::ostringstream  ostr1;      //构造方式1
@@ -61,6 +127,22 @@ mutable：mutable修饰符。默认情况下，Lambda函数总是一个const函�
      cout << ostr1.str();                //输出要有.str()
 //输出 ostr1  2012	
 （3）std::ostringstream  ostr2(“abc”)     //构造方式2
+
+10. 管道  int mkfifo(const char* pathname,mode_t mode);
+常见操作：
+创建管道（mkfifo）-> 打开管道（open）-> 读写数据（read/write）-> 关闭管道（close）
+-> 删除管道（unlink）
+
+11.  vector.at(i)
+我们定义一个数组vector<int>v(10)
+ v[]和v.at()都可以对v中元素进行访问，并且访问的元素时都不能越界，比如a[10]或a.at(10)这样的使用会报错。区别在于，operator[]不做边界检查， 哪怕越界了也会返回一个引用，当然这个引用是错误的引用，如何不小心调用了这个引用对象的方法，会直接导致应用退出。而由于at会做边界检查，如果越界，会抛出异常，应用可以try  catch这个异常，应用还能继续运行。
+
+12.
+std::advance(iterator it,int n) 是将迭代子it向后移动n个单位。
+std::prev(iterator it,int n) 是将迭代子it向前移动n个单位。
+std::next(iterator it,int n) 返回迭代子后面n个单位的指针
+
+string的c_str()返回的指针是由string管理的，因此它的生命期是string对象的生命期，而string类的实现实际上封装着一个char*的指针，而c_str()直接返回该指针的引用，因此string对象的改变会直接影响已经执行过的c_str()返回的指针引用。简而言之，调用任何 std::string 的非 const 成员函数以后，c_str() 的返回值就不可靠了
 
 6.#define 后面加 # 和 ##
 （1）#define后面如果再加一个 # 号，那么这个符号的作用是文本参数“字符串化”，即出现在宏定义字符文本中的#把跟在后面的参数转换成一个C++字符串常量。
