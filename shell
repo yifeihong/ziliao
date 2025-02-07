@@ -132,3 +132,50 @@ if [[ $? -eq 0 && "$DB" == "true" ]]; then
     popd
 fi
 
+
+（1）
+list(TRANSFORM _rel_files PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/ OUTPUT_VARIABLE _abs_files)
+
+- `_rel_files`：需要转换为绝对路径的相对路径文件列表，可以是一个或多个文件。
+- `PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/`：在相对路径前添加 `${CMAKE_CURRENT_SOURCE_DIR}/`，即将相对路径转换为相对于当前源代码目录的绝对路径。
+- `OUTPUT_VARIABLE _abs_files`：将转换后的绝对路径文件列表保存到变量 `_abs_files` 中，以便后续使用。
+
+总的来说，这个命令的作用是将相对路径文件列表转换为绝对路径文件列表，以便在后续的 CMake 构建过程中使用。
+
+（2）
+set(_rel_cpp_files ${_rel_files})
+list(FILTER _rel_cpp_files INCLUDE REGEX ".cpp$")
+target_sources(${_curr_lib} PRIVATE ${_rel_Cpp_files})
+
+首先，它定义了一个变量 `_rel_cpp_files`，将其赋值为变量 `_rel_files` 的值。然后，使用 `list(FILTER)` 命令，将 `_rel_cpp_files` 中的文件名筛选出以 `.cpp` 结尾的文件，将结果存储回 `_rel_cpp_files` 中。
+
+最后，使用 `target_sources` 命令，将 `_rel_cpp_files` 中的文件添加到当前目标库 `_curr_lib` 的源文件列表中，使其编译链接到目标库中。这样，在编译目标库时，CMake 将会自动编译这些源文件，并将其链接到生成的库中。
+
+（3）
+set(_rel_src_files ${_rel_files})
+list(FILTER _rel_src_files EXCLUDE REGEX ".cfg$")
+
+函数使用 `list(FILTER)` 命令将 `_rel_src_files` 列表中符合正则表达式 `'.cfg$'` 的元素过滤掉，只保留非 `.cfg` 文件。
+
+（4）
+add_custom_target( ${_curr_lib}_gen_files
+COMMAND ${MODEL_ROOT}/build_util/gen-config.py -i ${def_file} -o ${_rel_files}
+BYPRODUCTS ${_abs_files}
+SOURCES ${_rel_src_files}
+WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR]
+COMMENT "Generate ${ARGN} in ${CMAKE_CURRENT_SOURCE_DIR]"
+)
+上面的 CMake 代码定义了一个自定义目标（custom target），名称为 `${_curr_lib}_gen_files`，它的命令是运行 `${MODEL_ROOT}/build_util/gen-config.py` 脚本，该脚本需要输入参数 `-i ${def_file}` 和 `-o ${_rel_files}`，其中 `${def_file}` 和 `${_rel_files}` 是变量，需要在其他地方定义它们的值。这个自定义目标的副产品（byproducts）是 `${_abs_files}`，源文件（sources）是 `${_rel_src_files}`，这两个变量的值也需要在其他地方定义。此外，这个自定义目标的工作目录（working directory）是 `${CMAKE_CURRENT_SOURCE_DIR}`，即当前的源代码目录。最后，这个自定义目标还有一个注释（comment），即 `'Generate ${ARGN} in ${CMAKE_CURRENT_SOURCE_DIR}'`，其中 `${ARGN}` 是一个特殊的变量，代表了该自定义目标的参数列表。
+
+（5）
+add_dependencies(${_curr_lib} ${_curr_lib}_gen_files)
+
+${_curr_lib} 是当前库的名称变量，${_curr_lib}_gen_files 是当前库生成的文件名称变量。
+
+add_dependencies 函数的作用是将当前库与其依赖的其他库或生成的文件关联起来，告诉 CMake 在构建当前库之前需要先构建其依赖项。
+
+例如，如果当前库需要依赖 libA 和 libB，那么可以在 CMakeLists.txt 中使用 add_dependencies(${_curr_lib} libA libB) 来声明这些依赖关系。这样在构建当前库时，CMake 会先构建 libA 和 libB，然后再构建当前库。同理，如果当前库生成了一些文件，也可以使用 add_dependencies 函数将这些文件与当前库关联起来，告诉 CMake 在构建当前库之前需要先生成这些文件。
+
+Cmake 中输出变量信息：
+message(“VAR_NAME = ${VAR_NAME}”)
+
